@@ -4,7 +4,7 @@ from rbf_agent import Agent as RBFAgent  # Use for Tasks 1-3
 from utils import plot_rewards
 
 env_name = "CartPole-v0"
-#env_name = "LunarLander-v2"
+# env_name = "LunarLander-v2"
 env = gym.make(env_name)
 env.reset()
 
@@ -59,7 +59,8 @@ for ep in range(num_episodes):
         next_state, reward, done, _ = env.step(action)
         cum_reward += reward
 
-        # Task 1: TODO: Update the Q-values
+        # Task 1: TODO: Update the Q-values -- DONE
+        agent.single_update(state, action, next_state, reward, done)
         # Task 2: TODO: Store transition and batch-update Q-values
         # Task 4: Update the DQN
 

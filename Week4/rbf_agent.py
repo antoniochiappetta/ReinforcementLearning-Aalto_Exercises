@@ -7,7 +7,6 @@ from sklearn.kernel_approximation import RBFSampler
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import FeatureUnion
 
-
 env = gym.make("CartPole-v0")
 actions = env.action_space.n
 
@@ -40,7 +39,7 @@ class Agent(object):
 
         # Create a value approximator for each action
         self.q_functions = [SGDRegressor(learning_rate="constant", max_iter=500, tol=1e-3)
-                       for _ in range(self.num_actions)]
+                            for _ in range(self.num_actions)]
 
         # Initialize it to whatever values; implementation detail
         for q_a in self.q_functions:
@@ -49,9 +48,10 @@ class Agent(object):
     def featurize(self, state):
         if len(state.shape) == 1:
             state = state.reshape(1, -1)
-        # Task 1a: TODO: Use (s, abs(s)) as features
-        # Task 1b: RBF features
-        return self.featurizer.transform(self.scaler.transform(state))
+        # Task 1a: TODO: Use (s, abs(s)) as features -- DONE
+        return np.transpose((state, abs(state)))
+        # Task 1b: TODO: Use RBF features -- DONE
+        # return self.featurizer.transform(self.scaler.transform(state))
 
     def get_action(self, state, epsilon=0.0):
         if np.random.random() < epsilon:
@@ -66,16 +66,19 @@ class Agent(object):
 
     def single_update(self, state, action, next_state, reward, done):
         # Calculate feature representations of the
-        # Task 1: TODO: Set the feature state and feature next state
-        featurized_state = 0
-        featurized_next_state = 0
+        # Task 1: TODO: Set the feature state and feature next state -- DONE
+        featurized_state = self.featurize(state)
+        featurized_next_state = self.featurize(next_state)
 
-        # Task 1:  TODO Get Q(s', a) for the next state
-        next_qs = 0
+        # Task 1:  TODO Get Q(s', a) for the next state -- DONE
+        next_qs = self.q_functions[self.get_action(next_state)]
 
         # Calculate the updated target Q- values
-        # Task 1: TODO: Calculate target based on rewards and next_qs
-        target = 0
+        # Task 1: TODO: Calculate target based on rewards and next_qs -- DONE
+        if done:
+            target = reward - self.q_functions[action]
+        else:
+            target = reward + self.gamma * next_qs - self.q_functions[action]
 
         # Update Q-value estimation
         self.q_functions[action].partial_fit(featurized_state, target)
@@ -121,4 +124,3 @@ class Agent(object):
 
     def store_transition(self, *args):
         self.memory.push(*args)
-
