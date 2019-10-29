@@ -49,9 +49,9 @@ class Agent(object):
         if len(state.shape) == 1:
             state = state.reshape(1, -1)
         # Task 1a: TODO: Use (s, abs(s)) as features -- DONE
-        return np.transpose((state, abs(state)))
+        # return np.concatenate((state, abs(state)), axis=1)
         # Task 1b: TODO: Use RBF features -- DONE
-        # return self.featurizer.transform(self.scaler.transform(state))
+        return self.featurizer.transform(self.scaler.transform(state))
 
     def get_action(self, state, epsilon=0.0):
         if np.random.random() < epsilon:
@@ -71,17 +71,17 @@ class Agent(object):
         featurized_next_state = self.featurize(next_state)
 
         # Task 1:  TODO Get Q(s', a) for the next state -- DONE
-        next_qs = self.q_functions[self.get_action(next_state)]
+        next_qs = np.amax(np.array([q.predict(featurized_next_state)[0] for q in self.q_functions]), axis=0)
 
         # Calculate the updated target Q- values
         # Task 1: TODO: Calculate target based on rewards and next_qs -- DONE
         if done:
-            target = reward - self.q_functions[action]
+            target = reward
         else:
-            target = reward + self.gamma * next_qs - self.q_functions[action]
+            target = reward + self.gamma * next_qs
 
         # Update Q-value estimation
-        self.q_functions[action].partial_fit(featurized_state, target)
+        self.q_functions[action].partial_fit(featurized_state, (target,))
 
     def update_estimator(self):
         if len(self.memory) < self.batch_size:
@@ -91,20 +91,22 @@ class Agent(object):
             # Sample some data
             samples = self.memory.sample(self.batch_size)
 
-        # Task 2: TODO: Reformat data in the minibatch
-        states = 0
-        action = 0
-        next_states = 0
-        rewards = 0
-        dones = 0
+        # Task 2: TODO: Reformat data in the minibatch - DONE
+        states = np.array(list(map(lambda sample: sample.state, samples)))
+        action = np.array(list(map(lambda sample: sample.action, samples)))
+        next_states = np.array(list(map(lambda sample: sample.next_state, samples)))
+        rewards = np.array(list(map(lambda sample: sample.reward, samples)))
+        dones = np.array(list(map(lambda sample: sample.done, samples)))
 
-        # Task 2: TODO: Calculate Q(s', a)
-        featurized_next_states = self.featurize(next_states)
-        next_qs = 0
+        # Task 2: TODO: Calculate Q(s', a) -- DONE
+        next_qs = np.array(list(map(
+            lambda next_state: np.amax(np.array([q.predict(self.featurize(next_state))[0] for q in self.q_functions]), axis=0),
+            next_states
+        )))
 
         # Calculate the updated target values
-        # Task 2: TODO: Calculate target based on rewards and next_qs
-        targets = 0
+        # Task 2: TODO: Calculate target based on rewards and next_qs -- DONE
+        targets = rewards + self.gamma * next_qs * (1 - dones)
 
         # Calculate featurized states
         featurized_states = self.featurize(states)

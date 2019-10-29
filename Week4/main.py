@@ -60,8 +60,10 @@ for ep in range(num_episodes):
         cum_reward += reward
 
         # Task 1: TODO: Update the Q-values -- DONE
-        agent.single_update(state, action, next_state, reward, done)
+        # agent.single_update(state, action, next_state, reward, done)
         # Task 2: TODO: Store transition and batch-update Q-values
+        agent.store_transition(state, action, next_state, reward, done)
+        agent.update_estimator()
         # Task 4: Update the DQN
 
         # Move to the next state
