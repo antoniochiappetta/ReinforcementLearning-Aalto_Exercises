@@ -1,5 +1,6 @@
 import gym
 from matplotlib import pyplot as plt
+import seaborn as sb
 from rbf_agent import Agent as RBFAgent  # Use for Tasks 1-3
 from utils import plot_rewards
 
@@ -47,8 +48,10 @@ agent = RBFAgent(n_actions)
 
 # Training loop
 cumulative_rewards = []
+policy = []
 for ep in range(num_episodes):
     # Initialize the environment and state
+    policy = []
     state = env.reset()
     done = False
     eps = glie_a/(glie_a+ep)
@@ -56,14 +59,15 @@ for ep in range(num_episodes):
     while not done:
         # Select and perform an action
         action = agent.get_action(state, eps)
+        policy.append((state, action))
         next_state, reward, done, _ = env.step(action)
         cum_reward += reward
 
         # Task 1: TODO: Update the Q-values -- DONE
-        # agent.single_update(state, action, next_state, reward, done)
-        # Task 2: TODO: Store transition and batch-update Q-values
-        agent.store_transition(state, action, next_state, reward, done)
-        agent.update_estimator()
+        agent.single_update(state, action, next_state, reward, done)
+        # Task 2: TODO: Store transition and batch-update Q-values -- DONE
+        # agent.store_transition(state, action, next_state, reward, done)
+        # agent.update_estimator()
         # Task 4: Update the DQN
 
         # Move to the next state
