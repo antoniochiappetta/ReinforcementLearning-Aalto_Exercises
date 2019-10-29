@@ -1,5 +1,6 @@
 import gym
 from matplotlib import pyplot as plt
+import numpy as np
 import seaborn as sb
 from rbf_agent import Agent as RBFAgent  # Use for Tasks 1-3
 from utils import plot_rewards
@@ -51,7 +52,6 @@ cumulative_rewards = []
 policy = []
 for ep in range(num_episodes):
     # Initialize the environment and state
-    policy = []
     state = env.reset()
     done = False
     eps = glie_a/(glie_a+ep)
@@ -59,7 +59,6 @@ for ep in range(num_episodes):
     while not done:
         # Select and perform an action
         action = agent.get_action(state, eps)
-        policy.append((state, action))
         next_state, reward, done, _ = env.step(action)
         cum_reward += reward
 
@@ -73,7 +72,7 @@ for ep in range(num_episodes):
         # Move to the next state
         state = next_state
     cumulative_rewards.append(cum_reward)
-    plot_rewards(cumulative_rewards)
+    # plot_rewards(cumulative_rewards)
 
     # Update the target network, copying all weights and biases in DQN
     # Uncomment for Task 4
@@ -92,3 +91,34 @@ plt.show()
 
 # Task 3 - plot the policy
 
+# Reasonable values for Cartpole discretization
+num_of_actions = 2
+discr = 32
+x_min, x_max = -2.4, 2.4
+v_min, v_max = -3, 3
+th_min, th_max = -0.3, 0.3
+av_min, av_max = -4, 4
+
+# Create discretization grid
+x_grid = np.linspace(x_min, x_max, discr)
+v_grid = np.linspace(v_min, v_max, discr)
+th_grid = np.linspace(th_min, th_max, discr)
+av_grid = np.linspace(av_min, av_max, discr)
+
+q_grid = np.zeros((discr, discr))  # Cartpole
+
+def discretize_state(x0, th0):
+    return (
+        np.argmin(abs(x0-x_grid)),
+        np.argmin(abs(th0-th_grid))
+    )
+
+
+for x in x_grid:
+    for th in th_grid:
+        state = np.array([x, 0, th, 0])
+        action = agent.get_action(state)
+        x, th = discretize_state(x, th)
+        q_grid[x][th] = action
+sb.heatmap(q_grid)
+plt.show()
