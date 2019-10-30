@@ -79,10 +79,10 @@ class Agent(object):
         # This is merged based on the mask, such that we'll have either the expected
         # state value or 0 in case the state was final.
         next_state_values = torch.zeros(self.batch_size)
-        next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(1)[0].detach()
+        next_state_values[non_final_mask.bool()] = self.target_net(non_final_next_states).max(1)[0].detach()
 
-        # Task 4: TODO: Compute the expected Q values
-        expected_state_action_values = 0
+        # Task 4: TODO: Compute the expected Q values -- DONE
+        expected_state_action_values = reward_batch + self.gamma * next_state_values
 
         # Compute Huber loss
         loss = F.smooth_l1_loss(state_action_values.squeeze(),
