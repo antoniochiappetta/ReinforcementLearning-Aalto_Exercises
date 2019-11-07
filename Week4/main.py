@@ -107,6 +107,9 @@ for ep in range(num_episodes):
         state = next_state
     cumulative_rewards.append(cum_reward)
 
+    if ep % 100 == 0:
+        plot_rewards(cumulative_rewards)
+
     # Update the target network, copying all weights and biases in DQN
     # TODO: Uncomment for Task 4 -- DONE
     # if ep % TARGET_UPDATE == 0:
@@ -124,11 +127,14 @@ plt.show()
 
 # TODO: Task 3 - plot the policy -- DONE
 
-for x in x_grid:
-    for th in th_grid:
+x_grid = x_grid.round(2);
+th_grid = th_grid.round(2);
+
+for i, x in enumerate(x_grid):
+    for j, th in enumerate(th_grid):
         state = np.array([x, 0, th, 0])
         action = agent.get_action(state)
         x, th = discretize_position_velocity(x, th)
-        q_grid[x][th] = action
-sb.heatmap(q_grid, cbar=False, xticklabels=x_grid.round(1), yticklabels=th_grid.round(1))
+        q_grid[(i, j)] = action
+sb.heatmap(q_grid, cbar=False, xticklabels=x_grid, yticklabels=th_grid)
 plt.show()
