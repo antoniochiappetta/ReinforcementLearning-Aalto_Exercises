@@ -13,7 +13,7 @@ class Policy(torch.nn.Module):
         self.hidden = 64
         self.fc1 = torch.nn.Linear(state_space, self.hidden)
         self.fc2_mean = torch.nn.Linear(self.hidden, action_space)
-        self.sigma = torch.nn.Parameter(torch.tensor([10.]))  # torch.tensor([10.])  # torch.tensor([5.])  # TODO: Implement accordingly (T1, T2) -- DONE T1
+        self.sigma = torch.nn.Parameter(torch.tensor([1000.]))  # torch.tensor([5.])  # TODO: Implement accordingly (T1, T2) -- DONE T1
         self.init_weights()
 
     def init_weights(self):

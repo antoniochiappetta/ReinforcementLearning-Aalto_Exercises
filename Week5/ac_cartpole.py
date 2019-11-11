@@ -3,7 +3,7 @@ import gym
 import numpy as np
 import argparse
 import matplotlib.pyplot as plt
-from agent import Agent, Policy
+from pg_agent import Agent, Policy
 from cp_cont import CartPoleEnv
 import pandas as pd
 

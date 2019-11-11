@@ -8,7 +8,7 @@ import pandas as pd
 from itertools import repeat
 import sys
 import multiprocessing as mp
-from cartpole import train
+from pg_cartpole import train
 
 
 # Parse script arguments

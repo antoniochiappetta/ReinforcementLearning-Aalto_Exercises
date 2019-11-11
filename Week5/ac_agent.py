@@ -13,7 +13,7 @@ class Policy(torch.nn.Module):
         self.hidden = 64
         self.fc1 = torch.nn.Linear(state_space, self.hidden)
         self.fc2_mean = torch.nn.Linear(self.hidden, action_space)
-        self.sigma = 5  # 10  # torch.zeros(1)  # TODO: Implement accordingly (T1, T2) -- DONE T1
+        self.sigma = torch.nn.Parameter(torch.tensor([1000.]))  # torch.tensor([5.])  # TODO: Implement accordingly (T1, T2) -- DONE T1
         self.init_weights()
 
     def init_weights(self):
@@ -26,12 +26,11 @@ class Policy(torch.nn.Module):
         x = self.fc1(x)
         x = F.relu(x)
         mu = self.fc2_mean(x)
-        stddev = variance  # TODO: Is it a good idea to leave it like this? -- TODO
-        # TODO: If sigma is a variance, stddev should be its square root?
+        sigma = variance  # TODO: Is it a good idea to leave it like this? -- DONE
 
         # TODO: Instantiate and return a normal distribution -- DONE
         # with mean mu and std of sigma (T1)
-        return Normal(mu, stddev)
+        return Normal(mu, torch.sqrt(sigma))
 
         # TODO: Add a layer for state value calculation (T3)
 
@@ -54,21 +53,26 @@ class Agent(object):
         rewards = torch.stack(self.rewards, dim=0).to(self.train_device).squeeze(-1)
         self.states, self.action_probs, self.rewards = [], [], []
 
-        # TODO: Update policy variance (T2) -- DONE + BOH
+        # TODO: Update policy variance (T2) -- DONE
         c = 5e-4
-        # self.variance = self.policy.sigma * np.exp(-c * episode_number)
+        # self.variance = self.policy.sigma * np.exp(-c * episode_number)  # Exponentially decaying variance
 
         # TODO: Compute discounted rewards (use the discount_rewards function) -- DONE
-        self.rewards = discount_rewards(rewards, gamma=self.gamma)
-        # self.rewards = (self.rewards - self.rewards.mean(axis=0))/self.rewards.std(axis=0) Normalized
+        rewards = discount_rewards(rewards, gamma=self.gamma)
+        rewards = (rewards - torch.mean(rewards))/torch.std(rewards)  # REINFORCE with normalized rewards
 
         # TODO: Compute critic loss and advantages (T3)
 
-        # TODO: Compute the optimization term (T1, T3)
+        # TODO: Compute the optimization term (T1, T3) -- DONE
+        loss = torch.sum(-rewards * action_probs)  # REINFORCE
+        # loss = torch.sum(-(rewards - self.baseline) * action_probs)  # REINFORCE with baseline
 
-        # TODO: Compute the gradients of loss w.r.t. network parameters (T1)
+        # TODO: Compute the gradients of loss w.r.t. network parameters (T1) -- DONE
+        loss.backward()
 
-        # TODO: Update network parameters using self.optimizer and zero gradients (T1)
+        # TODO: Update network parameters using self.optimizer and zero gradients (T1) -- DONE
+        self.optimizer.step()
+        self.optimizer.zero_grad()
 
     def get_action(self, observation, evaluation=False):
         x = torch.from_numpy(observation).float().to(self.train_device)
@@ -80,7 +84,7 @@ class Agent(object):
         if evaluation:
             action = actions_distribution.mean
         else:
-            action = actions_distribution.sample(1)
+            action = actions_distribution.sample((1,))[0]
 
         # TODO: Calculate the log probability of the action (T1) -- DONE
         act_log_prob = actions_distribution.log_prob(action)
