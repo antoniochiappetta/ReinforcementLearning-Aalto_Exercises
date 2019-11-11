@@ -3,7 +3,7 @@ import gym
 import numpy as np
 import argparse
 import matplotlib.pyplot as plt
-from pg_agent import Agent, Policy
+from ac_agent import Agent, Policy
 from cp_cont import CartPoleEnv
 import pandas as pd
 
@@ -62,7 +62,7 @@ def train(env_name, print_things=True, train_run_id=0, train_episodes=5000):
         average_reward_history.append(avg)
 
         # Let the agent do its magic (update the policy)
-        agent.episode_finished(episode_number)
+        agent.episode_finished(episode_number) # TODO: Update at end of each episode -- DONE
 
     # Training is finished - plot rewards
     if print_things:
