@@ -38,7 +38,7 @@ class iLQR:
         self.Cu = np.zeros((self.horizon + 1, self.a_dim))
         self.Cxx = np.zeros((self.horizon + 1, self.s_dim, self.s_dim))
         self.Cuu = np.zeros((self.horizon + 1, self.a_dim, self.a_dim))
-        self.Cux = np.zeros((self.horizon + 1,self.a_dim, self.s_dim))  # For the cart-pole problem this is kept as zeros
+        self.Cux = np.zeros((self.horizon + 1, self.a_dim, self.s_dim))  # For the cart-pole problem this is kept as zeros
 
     def update_gradients(self, x_traj, u_traj):
 
@@ -50,14 +50,14 @@ class iLQR:
             self.Fx[t] = self.fx_grad(x, u)
             self.Fu[t] = self.fu_grad(x, u)
 
-            # TODO: Compute here the cost gradient for your cost function
-            self.Cx[t] = 0
-            self.Cu[t] = 0
-            # TODO: Compuete here the hessian for your cost function
-            self.Cxx[t] = 0
-            self.Cuu[t] = 0
+            # TODO: Compute here the cost gradient for your cost function -- DONE
+            self.Cx[t] = self.cost_dx(x, u)
+            self.Cu[t] = self.cost_du(x, u)
+            # TODO: Compuete here the hessian for your cost function -- DONE
+            self.Cxx[t] = self.cost_dxx(x, u)
+            self.Cuu[t] = self.cost_duu(x, u)
 
-            self.Cux[t] = 0
+            self.Cux[t] = self.cost_dux(x, u)
 
     def backward(self, x_traj, u_traj):
         self.v[-1] = self.C(x_traj[-1], u_traj[-1])
@@ -114,29 +114,30 @@ class iLQR:
             observations = np.array([np.append(x_traj_new[t], u_traj_new[t])])
             # Comment for Task 4
             test_predict = x_traj_new[t] + model.predict(observations)
-            # TODO Task 4: use the dynamics of the system instead of the learned model compute the next state
+            # TODO Task 4: use the dynamics of the system instead of the learned model compute the next state -- DONE
             x_traj_new[t + 1] = test_predict
+            # x_traj_new[t + 1] = self.f(x_traj_new[t], u_traj_new[t])
 
         return x_traj_new, u_traj_new
 
-    # TODO: Task2 Define here the gradient of your cost function respect to x
+    # TODO: Task2 Define here the gradient of your cost function respect to x -- DONE
     def cost_dx(self, x, u):
-        dx = 0
+        dx = np.dot(np.array([[2, 0], [0, 0.2]]), x)
         return dx
 
-    # TODO: Task2 Define here the hessian of your cost function respect to x
+    # TODO: Task2 Define here the hessian of your cost function respect to x -- DONE
     def cost_dxx(self, x, u):
-        dxx = 0
+        dxx = np.dot(np.array([[2, 0], [0, 2]]), x)
         return dxx
 
-    # TODO: Task2 Define here the gradient of your cost function respect to u
+    # TODO: Task2 Define here the gradient of your cost function respect to u -- DONE
     def cost_du(self, x, u):
-        du = 0
+        du = np.dot(np.array([0.0008]), u)
         return du
 
-    # TODO: Task2 Define here the Hessian of your cost function respect to u
+    # TODO: Task2 Define here the Hessian of your cost function respect to u -- DONE
     def cost_duu(self, x, u):
-        duu = 0
+        duu = np.dot(np.array([2]), u)
         return duu
 
     def cost_dux(self, x, u):

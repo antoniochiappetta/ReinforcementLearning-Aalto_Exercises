@@ -21,9 +21,12 @@ from utils import perform_rollouts, reshape_state, normalize_angle, plot_cost
 np.random.seed(7)
 
 
-# TODO: Task2 Define here your cost function.
+# TODO: Task2 Define here your cost function. -- DONE
 def cost_function(x, u):
-    costs = 0
+    x[0] = normalize_angle(x[0])
+    Q = np.array([[0.5, 0], [0, 0.05]])
+    R = np.array([0.0004])
+    costs = np.dot(np.dot(x.T, Q), x) + np.dot(np.dot(u.T, R), u)
     return costs
 
 # Dynamics used in Task4
@@ -102,13 +105,17 @@ def main(t_horizon):
             # Comment for Task 4
             prediction = x_traj[j] + model.predict(observations)
             x_traj.append(prediction[0])
-            # TODO Task 4: use x_traj[j].append(dynamics(x_traj[j], u_traj[j])) to compute the next state of the trajectory
+            # TODO Task 4: use x_traj[j].append(dynamics(x_traj[j], u_traj[j])) to compute the next state of the trajectory -- DONE
+            x_traj.append(dynamics(x_traj[j], u_traj[j]))
 
         # Perform the iLQR steps
         for rep in range(3):
-            # TODO: Task 3 Update the gradients
-            # TODO: Task 3 Perform the backward pass
-            # TODO: Task 3 Perform the forward pass, use alpha=0.99
+            # TODO: Task 3 Update the gradients -- DONE
+            controller.update_gradients(x_traj, u_traj)
+            # TODO: Task 3 Perform the backward pass -- DONE
+            k_traj, K_traj = controller.backward(x_traj, u_traj)
+            # TODO: Task 3 Perform the forward pass, use alpha=0.99 -- DONE
+            controller.forward(model, x_traj, u_traj, k_traj, K_traj, alpha_LQR)
             pass
 
         x_list.append(state)
