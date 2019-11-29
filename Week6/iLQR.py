@@ -40,6 +40,9 @@ class iLQR:
         self.Cuu = np.zeros((self.horizon + 1, self.a_dim, self.a_dim))
         self.Cux = np.zeros((self.horizon + 1, self.a_dim, self.s_dim))  # For the cart-pole problem this is kept as zeros
 
+        self.Q = np.array([[1, 0], [0, 0.1]])
+        self.R = 0.5
+
     def update_gradients(self, x_traj, u_traj):
 
         for t in range(self.horizon):
@@ -113,31 +116,33 @@ class iLQR:
             # Create the vector of observations X={x,u}
             observations = np.array([np.append(x_traj_new[t], u_traj_new[t])])
             # Comment for Task 4
-            test_predict = x_traj_new[t] + model.predict(observations)
+            # test_predict = x_traj_new[t] + model.predict(observations)
             # TODO Task 4: use the dynamics of the system instead of the learned model compute the next state -- DONE
-            x_traj_new[t + 1] = test_predict
-            # x_traj_new[t + 1] = self.f(x_traj_new[t], u_traj_new[t])
+            # x_traj_new[t + 1] = test_predict
+            x_traj_new[t + 1] = self.f(x_traj_new[t], u_traj_new[t])
 
         return x_traj_new, u_traj_new
 
     # TODO: Task2 Define here the gradient of your cost function respect to x -- DONE
     def cost_dx(self, x, u):
-        dx = np.dot(np.array([[2, 0], [0, 0.2]]), x)
+        norm_x = x
+        norm_x[0] = normalize_angle(x[0])
+        dx = 2*np.dot(self.Q, norm_x)
         return dx
 
     # TODO: Task2 Define here the hessian of your cost function respect to x -- DONE
     def cost_dxx(self, x, u):
-        dxx = np.dot(np.array([[2, 0], [0, 2]]), x)
+        dxx = 2*self.Q
         return dxx
 
     # TODO: Task2 Define here the gradient of your cost function respect to u -- DONE
     def cost_du(self, x, u):
-        du = np.dot(np.array([0.0008]), u)
+        du = 2*self.R*u
         return du
 
     # TODO: Task2 Define here the Hessian of your cost function respect to u -- DONE
     def cost_duu(self, x, u):
-        duu = np.dot(np.array([2]), u)
+        duu = 2*self.R
         return duu
 
     def cost_dux(self, x, u):
