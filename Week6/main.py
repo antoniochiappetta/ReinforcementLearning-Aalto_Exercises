@@ -24,8 +24,7 @@ np.random.seed(7)
 # TODO: Task2 Define here your cost function. -- DONE
 def cost_function(x, u):
     norm_x = x
-    norm_x[0] = normalize_angle(x[0])
-    Q = np.array([[1, 0], [0, 0.1]])
+    Q = np.array([[1000, 0], [0, 0.1]])
     R = 0.5
     costs = np.dot(np.dot(norm_x.T, Q), norm_x) + np.dot(np.dot(u.T, R), u)
     return costs
@@ -104,8 +103,8 @@ def main(t_horizon):
         for j in range(controller.horizon):
             observations = np.array([np.append(x_traj[j], u_traj[j])])
             # Comment for Task 4
-            # prediction = x_traj[j] + model.predict(observations)
-            # x_traj.append(prediction[0])
+            prediction = x_traj[j] + model.predict(observations)
+            x_traj.append(prediction[0])
             # TODO Task 4: use x_traj[j].append(dynamics(x_traj[j], u_traj[j])) to compute the next state of the trajectory -- DONE
             x_traj.append(dynamics(x_traj[j], u_traj[j]))
 

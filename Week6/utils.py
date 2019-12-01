@@ -14,6 +14,7 @@ def reshape_state(x):
     theta = np.arctan2(x[1], x[0])
     if (theta >= 0):
         theta = theta - 2 * np.pi
+    theta = normalize_angle(theta)
     return np.array((theta, x[2]))
 
 
